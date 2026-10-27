@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>LG Subscribe CRM Epromoter · SURASAK · v94</title>
+<title>LG Subscribe CRM Epromoter · SURASAK · Workday 2026.10.26</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -599,6 +599,11 @@
     <div x-show="!loading || customers.length">
 
 
+    <section class="rounded-xl border border-slate-200 bg-white p-4" aria-label="งานวันนี้">
+      <div class="flex items-center justify-between mb-3"><h2 class="font-bold text-slate-800">งานวันนี้</h2><span class="text-xs text-slate-500">นับจากวันนัดที่บันทึก · เวลาไทย</span></div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3"><template x-for="v in workViews" :key="v.id"><button type="button" class="border rounded-xl p-3 text-left" :class="workView===v.id ? 'border-red-600 bg-red-50' : 'border-slate-200'" @click="selectWorkView(v.id)"><div class="text-sm" x-text="v.label"></div><div class="text-2xl font-bold tabular-nums mt-1" x-text="workCount(v.id)"></div></button></template></div>
+      <p class="text-xs text-slate-500 mt-3">เลยนัด = นัดก่อนวันนี้ที่ยังไม่ปิดงาน · รอเอกสาร = กิจกรรมล่าสุด · กดการ์ดเพื่อดูรายชื่อ</p>
+    </section>
     <div class="workspace-top">
       <div class="workspace-heading"><div><h1>รายชื่อลูกค้า</h1><p>จัดการการติดต่อ ติดตามงาน และดูข้อมูลลูกค้าในที่เดียว</p></div></div>
       <section class="workspace-sources" aria-label="การ์ดแหล่งที่มาของหลีด"><h2 class="workspace-sources-title">แหล่งที่มาของหลีด</h2>
@@ -656,27 +661,6 @@
       </section>
       </section>
     </div>
-
-      <!-- Quick Views -->
-      <section class="workspace-quick rounded-2xl bg-white ring-1 ring-slate-200/70 p-4">
-        <div class="flex items-center gap-2 mb-3 flex-wrap">
-          <span class="text-[11px] font-bold uppercase tracking-[.14em] text-slate-400">Quick View</span>
-          <span class="text-[11px] text-slate-400">กดครั้งเดียว · กดซ้ำเพื่อยกเลิก</span>
-        </div>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          <template x-for="qv in quickViewDefs" :key="qv.id">
-            <button @click="applyQuickView(qv.id)"
-              class="qv-btn text-left px-4 py-3 rounded-xl border transition-all"
-              :class="activeQuickView===qv.id ? 'qv-btn-active' : 'bg-slate-50/80 border-slate-200/80 hover:border-slate-300 hover:bg-white'">
-              <div class="flex items-center gap-2 mb-0.5">
-                <span class="qv-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path :d="qv.iconPath"></path></svg></span>
-                <span class="text-[13.5px] font-bold" :class="activeQuickView===qv.id ? 'text-[var(--accent)]' : 'text-slate-800'" x-text="qv.label"></span>
-              </div>
-              <div class="text-[11px] pl-[34px]" :class="activeQuickView===qv.id ? 'text-slate-600' : 'text-slate-400'" x-text="qv.desc"></div>
-            </button>
-          </template>
-        </div>
-      </section>
 
       <!-- ── List View ── -->
       <div class="crm-list-layout">
@@ -1064,10 +1048,12 @@
                       </span>
                     </td>
                     <td class="px-3 max-w-[260px]">
+                      <div class="text-xs text-amber-700" x-show="c._syncWarning" x-text="c._syncWarning"></div>
+                      <div class="text-xs font-semibold mb-1" :class="workMatches(c,'overdue') ? 'text-red-700' : 'text-slate-700'" x-text="nextAction(c)"></div>
                       <div x-show="c.parsedNotes.length===0" class="text-[11.5px] text-slate-400 italic">—</div>
                       <div x-show="c.parsedNotes.length>0" class="flex items-baseline gap-2">
-                        <span x-show="c.parsedNotes[0].date" class="text-[11px] tabular-nums text-slate-400 font-medium shrink-0" x-text="fmtNoteDate(c.parsedNotes[0].date)"></span>
-                        <span class="text-[11.5px] text-slate-500 truncate" x-text="c.parsedNotes[0].text"></span>
+                        <span x-show="c.parsedNotes[0]?.date" class="text-[11px] tabular-nums text-slate-400 font-medium shrink-0" x-text="fmtNoteDate(c.parsedNotes[0]?.date)"></span>
+                        <span class="text-[11.5px] text-slate-500 truncate" x-text="c.parsedNotes[0]?.text"></span>
                         <span x-show="c.parsedNotes.length>1" class="text-[10px] font-bold shrink-0" style="color:var(--accent)" x-text="'+'+(c.parsedNotes.length-1)"></span>
                       </div>
                     </td>
@@ -1115,8 +1101,8 @@
                 <span x-show="c.installDate" x-text="(c.convenientDate||c.contactTime?' · ':'')+'ติดตั้ง '+c.installDate"></span>
               </div>
               <div x-show="c.parsedNotes.length>0" class="flex items-baseline gap-2 pt-1.5 border-t border-slate-100 mt-1.5">
-                <span class="text-[10px] tabular-nums text-slate-400 shrink-0" x-text="fmtNoteDate(c.parsedNotes[0].date)"></span>
-                <span class="text-[11px] text-slate-500 truncate" x-text="c.parsedNotes[0].text"></span>
+                <span class="text-[10px] tabular-nums text-slate-400 shrink-0" x-text="fmtNoteDate(c.parsedNotes[0]?.date)"></span>
+                <span class="text-[11px] text-slate-500 truncate" x-text="c.parsedNotes[0]?.text"></span>
               </div>
             </div>
           </template>
@@ -1208,6 +1194,10 @@
           </div>
         </div>
 
+        <div class="px-6 py-3 border-b bg-slate-50" x-show="selectedCustomer">
+          <div class="text-xs text-amber-700 mb-2" x-show="selectedCustomer?._syncWarning" x-text="selectedCustomer?._syncWarning"></div><div class="text-xs text-slate-500">งานถัดไป</div><div class="text-sm font-semibold" x-text="nextAction(selectedCustomer) || 'ยังไม่มีนัดหมายที่เปิดอยู่'"></div>
+          <button type="button" class="mt-2 text-sm underline" :disabled="noteSaving" x-show="nextAppointment(selectedCustomer)" @click="completeAppointment()">ปิดงานนัดหมายนี้</button>
+        </div>
         <!-- Drawer body -->
         <div class="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5 min-h-0">
 
@@ -1379,8 +1369,8 @@
 </div>
 
 <script>
-const CRM_BUILD       = '05.10.2026.V97';
-const CACHE_SCHEMA    = 'v27';
+const CRM_BUILD       = '26.10.2026.V103';
+const CACHE_SCHEMA    = 'v28';
 const NOTE_DATE_ONLY  = false;
 const LOGIN_PASSWORD    = 'surasak1234';
 const LOGIN_SESSION_KEY = 'lgCrmLoggedIn_surasak';
@@ -1535,7 +1525,7 @@ function app() {
     filterConvenientDate: '', filterContactTime: '', filterHousing: '',
     filterRailTab: (function () { try { return localStorage.getItem('lgCrmRailTab') || 'status'; } catch (e) { return 'status'; } })(),
     activeQuickView: '',
-    sortCol: 'lastNote', sortDir: 'desc', page: 1, pageSize: 25,
+    sortCol: 'row', sortDir: 'desc', page: 1, pageSize: 25,
     _frozenRows: null,
 
     /* ── Drawer ── */
@@ -1557,8 +1547,8 @@ function app() {
 
     quickViewDefs: [
       {id:'unset',    iconPath:'M9 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3 M9 3h6v4H9z M8 12h8 M8 16h5', label:'ยังไม่ทำ',     desc:'ยังไม่ระบุ Status'},
-      {id:'followup', iconPath:'M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z', label:'ต้องติดตาม',   desc:'Called · Follow up'},
-      {id:'hot',      iconPath:'M3 17l6-6 4 4 8-10 M15 5h6v6', label:'มีโอกาสปิด',   desc:'มีสีสนใจขึ้นไป'},
+      {id:'followup', iconPath:'M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z', label:'นัดวันนี้',   desc:'ตามวันนัดที่บันทึกไว้'},
+      {id:'noanswer', iconPath:'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z M1 1l22 22', label:'ลูกค้าที่ไม่รับสาย', desc:'บันทึกล่าสุดเป็นไม่รับสาย'},
       {id:'docs',     iconPath:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5', label:'รอเอกสาร',     desc:'รอยื่นเอกสาร'},
     ],
     activityOpts: [
@@ -1646,14 +1636,18 @@ function app() {
     showMetaLegend: false,
     showTiktokLegend: false,
     tiktokColumnLegend: [
-      {col:'A', label:'Email'},
-      {col:'B+C', label:'ชื่อ นามสกุล (ฟอร์มใหม่)'},
-      {col:'D', label:'Phone (ฟอร์มใหม่)'},
-      {col:'C+D', label:'ชื่อ นามสกุล (ฟอร์มเก่า)'},
-      {col:'E', label:'Phone (ฟอร์มเก่า · B=Final page)'},
-      {col:'M', label:'Action'},
+      {col:'A+B', label:'ชื่อ นามสกุล (ฟอร์มปัจจุบัน)'},
+      {col:'D', label:'Email (ฟอร์มปัจจุบัน) · เบอร์ (ฟอร์มกลาง)'},
+      {col:'E', label:'เบอร์โทร (ฟอร์มปัจจุบัน และฟอร์มเก่า)'},
+      {col:'F', label:'ประเภทที่พัก (ปัจจุบัน) · ชำระ (ฟอร์มเก่า)'},
+      {col:'G', label:'ช่องทางชำระ (ฟอร์มปัจจุบัน)'},
+      {col:'H', label:'พื้นที่ / จังหวัด (ฟอร์มปัจจุบัน)'},
+      {col:'I / J', label:'วันที่สะดวก / เวลาที่สะดวก'},
+      {col:'K', label:'สินค้า'},
+      {col:'L', label:'วันที่ลงทะเบียน (ปัจจุบัน) · เวลา (ฟอร์มเก่า)'},
+      {col:'M', label:'สถานะ'},
       {col:'N', label:'Epromoter'},
-      {col:'O', label:'Remark'},
+      {col:'O', label:'บันทึกสถานะ'},
     ],
     metaOctColumnLegend: [
       {col:'A', label:'ชื่อ นามสกุล'},
@@ -1721,7 +1715,7 @@ function app() {
       {key:'Meta ITAX',                   short:'Meta ITAX', label:'Meta ITAX', toneClass:'tone-sky', barClass:'bg-sky-400', icon:'itax', accent:'#0284C7', tint:'#e8f4fc',
         columnHelp:'A=ชำระ · C=จังหวัด · D=ที่อยู่(บ้านเดี่ยว/คอนโด) · E=สินค้า · F=วันที่ · G=เวลาติดต่อ · H=ชื่อ · I=อายุ · J=เบอร์ · K=Email · N=สถานะ · O=Epromoter'},
       {key:'TikTok',                      short:'TikTok', label:'TikTok', toneClass:'tone-slate', barClass:'bg-slate-800', icon:'tiktok', accent:'#111111', tint:'#f4f4f5',
-        columnHelp:'ฟอร์มใหม่: B+C=ชื่อ · D=เบอร์ · E=บูโร · F=ที่พัก · G=ชำระ · H=พื้นที่ · I=วัน · J=เวลา · K=สินค้า · ฟอร์มเก่า (B=Final page): C+D=ชื่อ · E=เบอร์ · M=Action · N=Epromoter'},
+        columnHelp:'ปัจจุบัน: A+B=ชื่อ · D=Email · E=เบอร์ · F=ที่พัก · G=ชำระ · H=พื้นที่ · I=วัน · J=เวลา · K=สินค้า · L=วันลงทะเบียน · M=สถานะ · N=Epromoter · O=บันทึก · เก่า (B=Final page): C+D=ชื่อ · E=เบอร์'},
       {key:'Lead Subscribe Lg.com',        short:'LG.com',  label:'Subscribe LG',  toneClass:'tone-indigo', barClass:'bg-indigo-400', icon:'web', accent:'#C8102E', tint:'#fdecee'},
       {key:'Lead LG Success',              short:'Success', label:'LG Success',    toneClass:'tone-emerald',barClass:'bg-emerald-500', icon:'success', accent:'#047857', tint:'#e8f6f0'},
       {key:'Lead Consult',                 short:'Consult', label:'Lead Consult',  toneClass:'tone-orange', barClass:'bg-orange-400', icon:'consult', accent:'#C2410C', tint:'#fff3ea'},
@@ -1733,6 +1727,8 @@ function app() {
 
     /* ── Init ── */
     init() {
+      if(this._workTimer) clearInterval(this._workTimer);
+      this._workTimer=setInterval(()=>{this.workClock=Date.now();},60000);
       if (localStorage.getItem(CACHE_VER_KEY) !== CACHE_SCHEMA) {
         localStorage.removeItem(CACHE_KEY);
         ['lgCrmCache','lgCrmCache_v7','lgCrmCache_v8','lgCrmCache_v9','lgCrmCache_v10','lgCrmCache_v11','lgCrmCache_v12','lgCrmCache_v13','lgCrmCache_v11_test','lgCrmBuildVer'].forEach(k => localStorage.removeItem(k));
@@ -1875,7 +1871,7 @@ function app() {
             const json = ok.length === 1 ? ok[0] : mergePromoterPayloads(ok);
             const raw = dedupeCustomersByPhone(json.data || []);
             this.sheetsFound = json.sheetsFound || null;
-            this.sortCol = 'lastNote'; this.sortDir = 'desc'; this.page = 1;
+            this.sortCol = 'row'; this.sortDir = 'desc'; this.page = 1;
             const n = new Date();
             let ts = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+' น.';
             if (PROMOTER === 'POND') ts += fail.length ? ' · WUTTICHAI ยังไม่ครบ' : ' · POND+WUTTICHAI';
@@ -1928,9 +1924,57 @@ function app() {
       }).reverse();
     },
 
+    workView: '',
+    workClock: Date.now(),
+    _workTimer: null,
+    destroy() { if(this._workTimer) clearInterval(this._workTimer); },
+    workViews: [{id:'today',label:'นัดวันนี้'},{id:'overdue',label:'เลยนัด'},{id:'new',label:'ยังไม่ติดต่อ'},{id:'docs',label:'รอเอกสาร'}],
+    workDay() { return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(this.workClock)); },
+    nextAppointment(c) {
+      if (!c || ['Purchased','Unqualified','Called but denied'].includes(c.status) || this.isSelloutSource(c.source)) return null;
+      for (const n of (c.parsedNotes || this._parseNotes(c.notes || ''))) {
+        const t = String(n.text || '');
+        if (/ปิดงานนัดหมาย|ยกเลิกนัดหมาย/.test(t)) return null;
+        const m = t.match(/(?:นัดติดต่อกลับ|ติดต่อมาใหม่)\s*:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
+        if (!m) continue;
+        let y=+m[3]; if(y>2400)y-=543;
+        const mo=+m[2],d=+m[1],h=+m[4],mi=+m[5],check=new Date(Date.UTC(y,mo-1,d));
+        if(mo<1||mo>12||d<1||check.getUTCDate()!==d||h>23||mi>59)continue;
+        const pad=n=>String(n).padStart(2,'0');
+        return {day:y+'-'+pad(mo)+'-'+pad(d),key:y+'-'+pad(mo)+'-'+pad(d)+'T'+pad(h)+':'+pad(mi),label:pad(d)+'/'+pad(mo)+'/'+(y+543)+' '+pad(h)+':'+pad(mi)};
+      }
+      return null;
+    },
+    workMatches(c,id) {
+      if(!c)return false;
+      if (this.isSelloutSource(c.source) || ['Purchased','Unqualified','Called but denied'].includes(c.status)) return false;
+      const ap=this.nextAppointment(c);
+      if(id==='today') return !!ap && ap.day===this.workDay();
+      if(id==='overdue') return !!ap && ap.day<this.workDay();
+      if(id==='new') return !c.status && !(c.parsedNotes || []).length;
+      if(id==='docs') return /รอยื่นเอกสาร|รอเอกสาร/.test(c.parsedNotes?.[0]?.text || '');
+      return true;
+    },
+    workCount(id) { return this.customers.filter(c=>this.workMatches(c,id)).length; },
+    selectWorkView(id) { const next=this.workView===id?'':id;this.clearFilters();this.workView=next;this.sortCol=next==='today'||next==='overdue'?'appointment':'row';this.sortDir='asc';this.page=1; },
+    nextAction(c) {
+      if(!c)return '';
+      const ap=this.nextAppointment(c);
+      if(ap)return (ap.day<this.workDay()?'เลยนัด · ':'นัด · ')+ap.label;
+      if(this.workMatches(c,'new'))return 'ติดต่อครั้งแรก';
+      if(this.workMatches(c,'docs'))return 'ติดตามเอกสาร';
+      return '';
+    },
+    async completeAppointment() {
+      if(this.noteSaving || !this.nextAppointment(this.selectedCustomer))return;
+      this.noteSaving=true;
+      try { await this._syncNote(new Date().toLocaleDateString('th-TH',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'})+' — ปิดงานนัดหมาย'); }
+      finally {this.noteSaving=false;}
+    },
     /* ── Computed ── */
     get filtered() {
       let list = [...this.customers];
+      if(this.workView) list=list.filter(c=>this.workMatches(c,this.workView));
       const q = this.search.trim().toLowerCase();
       if (q) list = list.filter(c =>
         (c.name||'').toLowerCase().includes(q) ||
@@ -1948,7 +1992,8 @@ function app() {
       else if (this.filterStatus === '__unset__') list = list.filter(c => !c.status);
       else if (this.filterStatus) list = list.filter(c => c.status === this.filterStatus);
       if (this.filterPayment)  list = list.filter(c => this._matchPayment(c.paymentChannel, this.filterPayment));
-      if (this.filterActivity) list = list.filter(c => c.parsedNotes.some(n => this._matchActivity(n.text, this.filterActivity)));
+      if (this.filterActivity === '__noanswer__') list = list.filter(c => this._isNoAnswerCustomer(c));
+      else if (this.filterActivity) list = list.filter(c => c.parsedNotes.some(n => this._matchActivity(n.text, this.filterActivity)));
       if (this.filterConvenientDate) list = list.filter(c => this.convenientDateKey(c.convenientDate) === this.convenientDateKey(this.filterConvenientDate));
       if (this.filterContactTime) list = list.filter(c => this.contactTimeKey(c.contactTime) === this.filterContactTime);
       if (this.filterHousing) list = list.filter(c => this.housingLabel(c.housingType) === this.filterHousing);
@@ -1957,10 +2002,17 @@ function app() {
       const col = this.sortCol, dir = this.sortDir === 'asc' ? 1 : -1;
       const numCols = ['id','row','age'];
       return list.sort((a,b) => {
-        if (this.filterHL === 'ranked' && col !== 'lastNote') {
+        if (this.filterHL === 'ranked' && col !== 'lastNote' && col !== 'row') {
           const hd = this.getHL(b) - this.getHL(a);
           if (hd) return hd;
         }
+        // ลำดับชีต: แหล่งเดียวกันอยู่ด้วยกัน แถวล่างของชีต (หลีดใหม่) อยู่บน
+        if (col === 'row') {
+          const so = this._sourceOrder(a.source) - this._sourceOrder(b.source);
+          if (so) return so;
+          return (Number(a.row||0) - Number(b.row||0)) * dir;
+        }
+        if (col === 'appointment') return (this.nextAppointment(a)?.key || '9999').localeCompare(this.nextAppointment(b)?.key || '9999') * dir;
         if (col === 'lastNote') return (this._noteTimestamp(a) - this._noteTimestamp(b)) * dir;
         if (numCols.includes(col)) return (Number(a[col]||0) - Number(b[col]||0)) * dir;
         const av = String(a[col]||'').toLowerCase(), bv = String(b[col]||'').toLowerCase();
@@ -2017,6 +2069,7 @@ function app() {
     },
     get activeFilterTags() {
       const tags = [];
+      if(this.workView) tags.push({id:'work',label:this.workViews.find(v=>v.id===this.workView)?.label});
       const q = this.search.trim();
       if (q) tags.push({ id:'search', label:'ค้นหา: ' + q });
       if (this.filterSource) tags.push({ id:'source', label:'ที่มา: ' + this.srcShort(this.filterSource) });
@@ -2027,7 +2080,8 @@ function app() {
         const p = this.paymentFilterDefs.find(x => x.key === this.filterPayment);
         tags.push({ id:'payment', label:'ชำระ: ' + (p?.label || this.filterPayment) });
       }
-      if (this.filterActivity) {
+      if (this.filterActivity === '__noanswer__') tags.push({ id:'activity', label:'บันทึกหมายเหตุ: ลูกค้าที่ไม่รับสาย' });
+      else if (this.filterActivity) {
         const a = this.activityFilters.find(x => x.key === this.filterActivity);
         const lbl = a?.label || this.filterActivity;
         tags.push({ id:'activity', label:'บันทึกหมายเหตุ: ' + lbl });
@@ -2080,13 +2134,14 @@ function app() {
       const mm = mTime ? parseInt(m[5], 10) : 59;
       return new Date(y, parseInt(m[2], 10) - 1, parseInt(m[1], 10), hh, mm).getTime();
     },
-    _bumpCustomerList(customerId) {
-      const idx = this.customers.findIndex(c => c.id === customerId);
-      if (idx >= 0) this.customers[idx]._lastTouch = Date.now();
+    _sourceOrder(src) {
+      const key = normalizeSource(src);
+      const i = this.sourceDefs.findIndex(s => s.key === key);
+      return i < 0 ? 999 : i;
+    },
+    // บันทึกหรือเปลี่ยนสถานะแล้วไม่ย้ายแถว — รายชื่อค้างตามลำดับชีต
+    _bumpCustomerList() {
       this._frozenRows = null;
-      this.sortCol = 'lastNote';
-      this.sortDir = 'desc';
-      this.page = 1;
     },
     _resetQuickView()      { this.activeQuickView=''; this.filterStatusGroup=null; },
     applyQuickView(id) {
@@ -2096,14 +2151,16 @@ function app() {
       this.filterPayment=''; this.filterActivity=''; this.filterHL=null;
       this.filterConvenientDate=''; this.filterContactTime=''; this.filterHousing='';
       this.activeQuickView=id;
+      this.workView='';
       if (id==='unset') this.filterStatus='__unset__';
-      else if (id==='followup') { this.filterStatusGroup=['Called','Follow up']; this.sortCol='lastNote'; this.sortDir='desc'; }
-      else if (id==='hot') { this.filterHL='ranked'; this.sortCol='lastNote'; this.sortDir='desc'; }
-      else if (id==='docs') this.filterActivity='รอยื่นเอกสาร';
+      else if (id==='followup') this.workView='today';
+      else if (id==='noanswer') this.filterActivity='__noanswer__';
+      else if (id==='docs') this.workView='docs';
       this.page=1;
     },
     removeFilterTag(id) {
       this._frozenRows=null; this._resetQuickView();
+      if (id==='work') this.workView='';
       if (id==='search') this.search='';
       else if (id==='source') this.filterSource='';
       else if (id==='status' || id==='statusGroup') { this.filterStatus=''; this.filterStatusGroup=null; }
@@ -2116,7 +2173,7 @@ function app() {
       this.page=1;
     },
     toggleSource(key)      { this._frozenRows=null; this._resetQuickView(); this.filterSource = this.filterSource===key ? '' : key; this.showMetaLegend = this.isMetaFilterActive(); this.showTiktokLegend = this.isTiktokFilterActive(); this.page=1; },
-    clearFilters()         { this._frozenRows=null; this.search=''; this.filterSource=''; this.filterStatus=''; this.filterStatusGroup=null; this.filterPayment=''; this.filterActivity=''; this.filterHL=null; this.filterConvenientDate=''; this.filterContactTime=''; this.filterHousing=''; this.activeQuickView=''; this.showMetaLegend=false; this.showTiktokLegend=false; this.page=1; },
+    clearFilters()         { this.workView=''; this._frozenRows=null; this.search=''; this.filterSource=''; this.filterStatus=''; this.filterStatusGroup=null; this.filterPayment=''; this.filterActivity=''; this.filterHL=null; this.filterConvenientDate=''; this.filterContactTime=''; this.filterHousing=''; this.activeQuickView=''; this.showMetaLegend=false; this.showTiktokLegend=false; this.page=1; },
     setFilterRailTab(id) {
       this.filterRailTab = id;
       try { localStorage.setItem('lgCrmRailTab', id); } catch (e) {}
@@ -2240,6 +2297,10 @@ function app() {
       'รับแล้วตัดสาย': ['รับแล้วตัดสาย', 'ตัดสาย'],
     },
     _activityKeys(key)     { return this._activityAliases[key] || [key]; },
+    _isNoAnswerCustomer(c) {
+      const note = c && c.parsedNotes && c.parsedNotes[0];
+      return this._missedCallAttempt(note && note.text) > 0;
+    },
     _missedCallAttempt(text) {
       const t = String(text || '');
       if (!t.includes('ไม่รับสาย')) return 0;
@@ -2317,32 +2378,47 @@ function app() {
     isOctNewMeta(src) {
       return !!(src && src.metaLayout === 'oct-new');
     },
+    tiktokLayoutOf(src) {
+      return (src && src.tiktokLayout) || '';
+    },
     payColMark(src) {
       if (this.isOctNewMeta(src)) return '(F)';
       const s = this.leadSourceOf(src);
       if (this.isMetaSource(s)) return '(A)';
-      if (this.isTiktokSource(s)) return '(F)';
+      if (this.isTiktokSource(s)) {
+        const lay = this.tiktokLayoutOf(src);
+        return (lay === 'name-first' || lay === 'phone-d') ? '(G)' : '(F)';
+      }
       return '';
     },
     housingColMark(src) {
       if (this.isOctNewMeta(src)) return '(E)';
       const s = this.leadSourceOf(src);
       if (this.isMetaSource(s)) return '(D)';
-      if (this.isTiktokSource(s)) return '(H)';
+      if (this.isTiktokSource(s)) {
+        const lay = this.tiktokLayoutOf(src);
+        return (lay === 'name-first' || lay === 'phone-d') ? '(F)' : '(H)';
+      }
       return '';
     },
     dateColMark(src) {
       if (this.isOctNewMeta(src)) return '(H)';
       const s = this.leadSourceOf(src);
       if (this.isMetaSource(s)) return '(F)';
-      if (this.isTiktokSource(s)) return '(J)';
+      if (this.isTiktokSource(s)) {
+        const lay = this.tiktokLayoutOf(src);
+        return (lay === 'name-first' || lay === 'phone-d') ? '(I)' : '(J)';
+      }
       return '';
     },
     timeColMark(src) {
       if (this.isOctNewMeta(src)) return '(I)';
       const s = this.leadSourceOf(src);
       if (this.isMetaSource(s)) return '(G)';
-      if (this.isTiktokSource(s)) return '(L)';
+      if (this.isTiktokSource(s)) {
+        const lay = this.tiktokLayoutOf(src);
+        return (lay === 'name-first' || lay === 'phone-d') ? '(J)' : '(L)';
+      }
       return '';
     },
     productColMark(src) {
@@ -2356,7 +2432,11 @@ function app() {
       if (this.isOctNewMeta(src)) return '(D)';
       const s = this.leadSourceOf(src);
       if (this.isMetaSource(s)) return '(B)';
-      if (this.isTiktokSource(s)) return '(G)';
+      if (this.isTiktokSource(s)) {
+        const lay = this.tiktokLayoutOf(src);
+        if (lay === 'name-first') return '';
+        return lay === 'phone-d' ? '(E)' : '(G)';
+      }
       return '';
     },
     bureauLabel(v) {
@@ -2451,8 +2531,8 @@ function app() {
       } catch(e) {
         // ใส่สีบนจอแล้ว — อย่าโชว์ error แดงเรื่อง Script/Deploy
         if (isWriteSoftOkErr(e)) {
-          this.syncMsg = next ? '✅ ใส่สี Remark แล้ว' : '✅ ล้างสี Remark แล้ว';
-          this.syncOk = true;
+          this.syncMsg = '⚠️ เปลี่ยนสีบนจอแล้ว แต่ยังยืนยันจากชีตไม่ได้';
+          this.syncOk = false;
         } else {
           this.syncMsg = '';
           this.syncOk = null;
@@ -2483,6 +2563,63 @@ function app() {
       this._notesLoadGen = (this._notesLoadGen || 0) + 1; // ยกเลิก load ค้าง
     },
 
+    // ทุกแถวที่เบอร์เดียวกัน ทั้งการ์ดที่ยังแยกอยู่ และแถว Meta ที่ถูกยุบรวม
+    _samePhoneCustomers(customer) {
+      const key = phoneKey(customer && customer.phone);
+      if (!key) return customer ? [customer] : [];
+      const list = this.customers.filter(c => phoneKey(c.phone) === key);
+      return list.length ? list : [customer];
+    },
+    _noteTargets(customer) {
+      const seen = new Set();
+      const out = [];
+      const push = (source, row) => {
+        if (!source || row == null || row === '') return;
+        const id = normalizeSource(source) + '|' + Number(row);
+        if (seen.has(id)) return;
+        seen.add(id);
+        out.push({ source, row: Number(row) });
+      };
+      for (const c of this._samePhoneCustomers(customer)) {
+        push(c.source, c.row);
+        for (const a of (c.altRows || [])) push(a.source, a.row);
+      }
+      return out;
+    },
+    _rowKey(source, row) {
+      return normalizeSource(source) + '|' + Number(row);
+    },
+    _appendEntryLocal(c, entry) {
+      const lines = String(c.notes || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length && lines[lines.length - 1] === entry) return false;
+      c.notes = lines.concat([entry]).join('\n');
+      c.parsedNotes = this._parseNotes(c.notes);
+      return true;
+    },
+    _mirrorActivityLocal(entry) {
+      const cur = this.selectedCustomer;
+      const key = phoneKey(cur && cur.phone);
+      if (!key || !entry) return 0;
+      let n = 0;
+      for (const c of this.customers) {
+        if (c.id === cur.id) continue;
+        if (phoneKey(c.phone) !== key) continue;
+        if (this._appendEntryLocal(c, entry)) n++;
+      }
+      if (n) this._persistCache();
+      return n;
+    },
+    _writeNoteRows(targets, action, fields) {
+      for (const t of targets) {
+        this._writeJsonp({
+          action,
+          sheet: t.source,
+          row: t.row,
+          promoter: PROMOTER,
+          ...fields
+        });
+      }
+    },
     // ยิงเขียนชีตรองแบบไม่รอ (ไม่บล็อก UI / ไม่ทำให้ขึ้น error)
     _fireWriteAltRows(action, fields) {
       const alts = this.selectedCustomer?.altRows || [];
@@ -2508,6 +2645,8 @@ function app() {
       if (!this.pendingStatus || !this.selectedCustomer) return;
       this._frozenRows = [...this.paginated];
       this.savingStatus = true; this.saveMsg = '';
+      const original=this.selectedCustomer;
+      const alts=[...(original.altRows || [])];
       const ns = this.pendingStatus;
       const src = this.selectedCustomer.source;
       const row = this.selectedCustomer.row;
@@ -2537,20 +2676,23 @@ function app() {
             await new Promise(r => setTimeout(r, 800));
           }
         }
-        this._fireWriteAltRows('updateStatus', { status: ns });
-        if (lastErr && !isWriteSoftOkErr(lastErr)) {
-          this.saveMsg = '⚠️ บันทึก Status ไม่สำเร็จ';
+        this._writeNoteRows(alts,'updateStatus',{status:ns});
+        original._syncWarning=lastErr ? 'ยังยืนยัน Status จากชีตไม่ได้' : '';
+        this._persistCache();
+        if(this.selectedCustomer?.id!==original.id){this.savingStatus=false;return;}
+        if (lastErr) {
+          this.saveMsg = isWriteSoftOkErr(lastErr) ? '⚠️ รอยืนยัน Status จากชีต — กรุณาโหลดตรวจสอบ' : '⚠️ บันทึก Status ไม่สำเร็จ — เปลี่ยนเฉพาะบนจอ';
           this.saveOk = false;
         } else {
-          // สำเร็จจริง หรือ soft-ok (timeout/script) — โชว์แค่สำเร็จ ไม่โชว์ error แดง
+          // API confirmed the primary write.
           this.saveMsg = '✅ บันทึก Status เรียบร้อย';
           this.saveOk = true;
         }
       } catch (e) {
-        // กันพัง — ยังถือว่าอัปเดตบนจอแล้ว
-        this._fireWriteAltRows('updateStatus', { status: ns });
-        this.saveMsg = '✅ บันทึก Status เรียบร้อย';
-        this.saveOk = true;
+        original._syncWarning='ยังยืนยัน Status จากชีตไม่ได้';
+        this._persistCache();
+        this.saveMsg = '⚠️ ยังยืนยัน Status จากชีตไม่ได้ กรุณาโหลดตรวจสอบ';
+        this.saveOk = false;
       }
       this.savingStatus = false;
       setTimeout(()=>{ if (this.saveOk) { this.saveMsg=''; } }, 3500);
@@ -2669,7 +2811,17 @@ function app() {
           await new Promise(r => setTimeout(r, 800));
         }
       }
-      if (lastErr && isWriteSoftOkErr(lastErr)) return { ok: true, soft: true, data: null };
+      if (lastErr && isWriteSoftOkErr(lastErr)) {
+        if (params.action==='appendNote' || params.action==='updateNotes') {
+          try {
+            const r=await jsonpCall(this.apiUrl,{action:'getNotes',sheet:params.sheet,row:params.row,promoter:PROMOTER},NOTES_LOAD_MS);
+            const lines=v=>String(v||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+            const found=params.action==='appendNote' ? lines(r.notes).includes(params.note.trim()) : lines(r.notes).join('\n')===lines(params.notes).join('\n');
+            if(r?.success && found)return {ok:true,soft:false,data:r};
+          } catch(e) { /* Keep uncertain writes visible; never append automatically again. */ }
+        }
+        return { ok:false, soft:true, error:lastErr };
+      }
       return { ok: false, soft: false, error: lastErr };
     },
     async _syncNote(entry) {
@@ -2681,43 +2833,87 @@ function app() {
       this.sheetNotes = [entry, ...this.sheetNotes];
       const raw = [...this.sheetNotes].reverse().join('\n');
       this._syncNotes(raw, true);
+      this._mirrorActivityLocal(entry);
 
+      const customerId=this.selectedCustomer.id;
       const src = this.selectedCustomer.source;
       const row = this.selectedCustomer.row;
+      const targets = this._noteTargets(this.selectedCustomer);
+      const primary = this._rowKey(src, row);
       const res = await this._writeJsonp({
         action:'appendNote', sheet:src, row:row, note:entry, promoter:PROMOTER
       });
-      this._fireWriteAltRows('appendNote', { note: entry });
-      // ไม่โชว์ "โหลด Script ไม่ได้ / Deploy Anyone" — soft-ok = บันทึกสำเร็จ
+      this._writeNoteRows(
+        targets.filter(t => this._rowKey(t.source, t.row) !== primary),
+        'appendNote',
+        { note: entry }
+      );
+      const original=this.customers.find(c=>c.id===customerId);
+      if(original) original._syncWarning=res.ok ? '' : (res.soft ? 'รอยืนยันบันทึกจากชีต' : 'บันทึกชีตไม่สำเร็จ');
+      this._persistCache();
+      if(this.selectedCustomer?.id!==customerId)return;
+      const dupMsg = targets.length > 1 ? ' · ' + targets.length + ' หลีดเบอร์เดียวกัน' : '';
+      // Only acknowledge server-confirmed writes; keep uncertain results visible.
       if (res.ok) {
-        this.syncMsg = '✅ บันทึกขึ้น Sheet แล้ว';
+        this.syncMsg = '✅ บันทึกชีตหลักแล้ว' + (targets.length>1 ? ' · ส่งอัปเดตรายชื่อซ้ำแล้ว (ยังไม่ยืนยัน)' : '');
         this.syncOk = true;
       } else {
         // กรณี error จริงๆ (ไม่ใช่เน็ต/script) — ข้อความสั้น ไม่โชว์ technical
-        this.syncMsg = '✅ บันทึกบนจอแล้ว';
-        this.syncOk = true;
+        this.syncMsg = res.soft ? '⚠️ รอยืนยันจากชีต — ข้อมูลบนจอยังไม่ยืนยัน กรุณาโหลดตรวจสอบก่อนบันทึกซ้ำ' : '⚠️ บันทึกชีตไม่สำเร็จ — ข้อมูลนี้อยู่บนจอเท่านั้น';
+        this.syncOk = false;
       }
-      setTimeout(()=>{ this.syncMsg=''; this.syncOk=null; }, 3000);
+      if(res.ok) setTimeout(()=>{ if(this.syncOk){this.syncMsg=''; this.syncOk=null;} },3000);
     },
     async deleteNote(idx) {
+      const original=this.selectedCustomer;
+      if(!original)return;
+      const removed = String(this.sheetNotes[idx] || '').trim();
       const remaining = this.sheetNotes.filter((_,i) => i!==idx);
       const raw = [...remaining].reverse().join('\n');
       this._notesDirty = true;
       this._notesLoadGen = (this._notesLoadGen || 0) + 1;
       this.sheetNotes = remaining;
       this._syncNotes(raw, true);
+      const src = this.selectedCustomer.source;
+      const row = this.selectedCustomer.row;
       const res = await this._writeJsonp({
         action:'updateNotes',
-        sheet:this.selectedCustomer.source,
-        row:this.selectedCustomer.row,
+        sheet:src,
+        row:row,
         notes:raw,
         promoter:PROMOTER
       });
-      this._fireWriteAltRows('updateNotes', { notes: raw });
-      // ลบบนจอแล้ว — ไม่โชว์ error แดง
-      if (!res.ok && !res.soft) {
-        /* เงียบ — รายการถูกลบจาก UI แล้ว */
+      const seen = new Set([this._rowKey(src, row)]);
+      const writeReplace = (source, r, notes) => {
+        const id = this._rowKey(source, r);
+        if (!source || !r || seen.has(id)) return;
+        seen.add(id);
+        this._writeJsonp({ action:'updateNotes', sheet:source, row:r, notes, promoter:PROMOTER });
+      };
+      for (const a of (original.altRows || [])) writeReplace(a.source, a.row, raw);
+      const key = phoneKey(original.phone);
+      if (key && removed) {
+        let changed = false;
+        for (const c of this.customers) {
+          if (c.id === original.id) continue;
+          if (phoneKey(c.phone) !== key) continue;
+          const lines = String(c.notes || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          const next = lines.filter(l => l !== removed);
+          if (next.length === lines.length) continue;
+          const sibRaw = next.join('\n');
+          c.notes = sibRaw;
+          c.parsedNotes = this._parseNotes(sibRaw);
+          changed = true;
+          writeReplace(c.source, c.row, sibRaw);
+          for (const a of (c.altRows || [])) writeReplace(a.source, a.row, sibRaw);
+        }
+        if (changed) this._persistCache();
       }
+      original._syncWarning=res.ok ? '' : 'ยังยืนยันการลบจากชีตไม่ได้';
+      this._persistCache();
+      if(this.selectedCustomer?.id!==original.id)return;
+      this.syncOk=res.ok;
+      this.syncMsg=res.ok ? '✅ ลบจากชีตหลักแล้ว' : (res.soft ? '⚠️ รอยืนยันการลบจากชีต กรุณาโหลดตรวจสอบ' : '⚠️ ลบจากชีตไม่สำเร็จ — เปลี่ยนเฉพาะบนจอ');
     },
 
     /* ── Phone utils ── */
